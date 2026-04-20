@@ -43,7 +43,7 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     """Response model for course queries"""
     answer: str
-    sources: List[str]
+    sources: List[dict]
     session_id: str
 
 class CourseStats(BaseModel):
@@ -72,6 +72,13 @@ async def query_documents(request: QueryRequest):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/session/{session_id}")
+async def delete_session(session_id: str):
+    """Clear and remove a session from memory"""
+    rag_system.session_manager.clear_session(session_id)
+    rag_system.session_manager.sessions.pop(session_id, None)
+    return {"status": "ok"}
 
 @app.get("/api/courses", response_model=CourseStats)
 async def get_course_stats():

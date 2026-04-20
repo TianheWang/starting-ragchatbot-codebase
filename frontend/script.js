@@ -19,6 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     createNewSession();
     loadCourseStats();
+
+    document.getElementById('newChatBtn').addEventListener('click', async () => {
+        if (currentSessionId) {
+            try {
+                await fetch(`${API_URL}/session/${currentSessionId}`, { method: 'DELETE' });
+            } catch (e) {
+                // non-critical; proceed with local reset
+            }
+        }
+        createNewSession();
+    });
 });
 
 // Event Listeners
@@ -122,10 +133,15 @@ function addMessage(content, type, sources = null, isWelcome = false) {
     let html = `<div class="message-content">${displayContent}</div>`;
     
     if (sources && sources.length > 0) {
+        const sourceLinks = sources.map(s =>
+            s.url
+                ? `<a class="source-chip" href="${s.url}" target="_blank" rel="noopener noreferrer">${s.label}</a>`
+                : `<span class="source-chip">${s.label}</span>`
+        ).join('');
         html += `
             <details class="sources-collapsible">
                 <summary class="sources-header">Sources</summary>
-                <div class="sources-content">${sources.join(', ')}</div>
+                <div class="sources-content">${sourceLinks}</div>
             </details>
         `;
     }
